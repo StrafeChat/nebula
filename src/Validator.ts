@@ -16,7 +16,7 @@ export class Validator {
             const secret = Buffer.from(parts[2], 'base64').toString("utf-8");
 
             const user = await cassandra.execute(`
-            SELECT id, last_pass_reset, secret, avatar, banner FROM ${cassandra.keyspace}.users
+            SELECT id, last_pass_reset, secret, avatar, banner, created_at FROM ${cassandra.keyspace}.users
             WHERE id=?
             LIMIT 1;
             `, [id]);

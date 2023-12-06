@@ -54,12 +54,13 @@ app.post("/avatars/", Validator.verifyToken, async (req, res) => {
     const averageColor = calculateAverageColor(imageData);
     const hexColor = rgbToHex(averageColor[0], averageColor[1], averageColor[2]);
 
+    console.log(req.body.user);
 
     await cassandra.execute(`
     UPDATE ${cassandra.keyspace}.users
-    SET avatar=?, edited_at=?
-    WHERE id=? 
-    `, [hexColor, Date.now(), req.body.user.id]);
+    SET accent_color=?, edited_at=?
+    WHERE id=? AND created_at=?
+    `, [hexColor, Date.now(), req.body.user.id, req.body.user.created_at], { prepare: true });
 
     fs.readFile(path, async (err, data) => {
         if (err) {
