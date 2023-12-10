@@ -54,8 +54,6 @@ app.post("/avatars/", Validator.verifyToken, async (req, res) => {
     const averageColor = calculateAverageColor(imageData);
     const hexColor = rgbToHex(averageColor[0], averageColor[1], averageColor[2]);
 
-    console.log(req.body.user);
-
     await cassandra.execute(`
     UPDATE ${cassandra.keyspace}.users
     SET accent_color=?, edited_at=?
