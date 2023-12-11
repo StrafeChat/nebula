@@ -12,19 +12,20 @@ import { createCanvas, loadImage } from "@napi-rs/canvas";
 const app = express();
 
 const cassandra = new Client({
-    contactPoints: [process.env.CASSANDRA_CONTACT_POINT!],
-    localDataCenter: process.env.CASSANDRA_DATA_CENTER,
-    keyspace: process.env.CASSANDRA_KEYSPACE
+    contactPoints: [process.env.SCYLLA_CONTACT_POINT1!, process.env.SCYLLA_CONTACT_POINT2!, process.env.SCYLLA_CONTACT_POINT3!],
+    localDataCenter: process.env.SCYLLA_DATA_CENTER,
+    credentials: { username: process.env.SCYLLA_USERNAME!, password: process.env.SCYLLA_PASSWORD! },
+    keyspace: process.env.SCYLLA_KEYSPACE
 })
 
-const redis = createClient();
+//const redis = createClient();
 
 app.use(bodyParser.json());
 app.use(cors());
 
 try {
     (async () => {
-        await redis.connect();
+        //await redis.connect();
         await cassandra.connect();
         app.listen(process.env.PORT ?? 80, () => {
             console.log("Listening on port " + process.env.PORT);
@@ -113,4 +114,4 @@ function rgbToHex(red: number, green: number, blue: number) {
     return parseInt(`${hexRed}${hexGreen}${hexBlue}`, 16);
 }
 
-export { cassandra, redis };
+export { cassandra };
