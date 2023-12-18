@@ -73,15 +73,7 @@ app.patch("/avatars/", Validator.verifyToken, async (req, res) => {
             WHERE id=? AND created_at=?
             `, [accentColor, `${hashedAvatar}_gif`, Date.now(), req.body.user.id, req.body.user.created_at], { prepare: true });
 
-            fs.readFile(`${avatarPath}.gif`, async (err, data) => {
-                if (err) {
-                    console.log(err.code);
-                    res.status(500).send("Internal Server Error");
-                } else {
-                    res.writeHead(201, { 'Content-Type': 'image/png' });
-                    res.end(data, 'binary');
-                }
-            });
+            res.status(200).json({ hash: `${hashedAvatar}_gif` });
         } else {
             const accentInt = image.averageColor();
 
@@ -101,15 +93,7 @@ app.patch("/avatars/", Validator.verifyToken, async (req, res) => {
             WHERE id=? AND created_at=?
             `, [accentColor, `${hashedAvatar}_png`, Date.now(), req.body.user.id, req.body.user.created_at], { prepare: true });
 
-            fs.readFile(`${avatarPath}.png`, async (err, data) => {
-                if (err) {
-                    console.log(err.code);
-                    res.status(500).send("Internal Server Error");
-                } else {
-                    res.writeHead(201, { 'Content-Type': 'image/png' });
-                    res.end(data, 'binary');
-                }
-            });
+            res.status(200).json({ hash: `${hashedAvatar}_png` });
         }
     } catch (err) {
         console.log(err);
