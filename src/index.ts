@@ -36,6 +36,10 @@ try {
     console.log(err);
 }
 
+app.get("/", (req, res) => {
+    res.send("Hello World!");
+});
+
 app.get("/avatars/:userId/:hash.:ext", (req, res) => {
     res.setHeader("Content-Type", "image/png");
     res.sendFile(`${req.params.hash}.${req.params.ext}`, { root: path.join(__dirname, `../static/avatars/${req.params.userId}`) });
