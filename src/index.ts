@@ -6,7 +6,7 @@ import express from "express";
 import fs from "fs";
 import path from "path";
 import { Validator } from "./Validator";
-import { GIF, Image, decode } from "imagescript";
+import { GIF, decode } from "imagescript";
 import crypto from "crypto";
 
 const app = express();
