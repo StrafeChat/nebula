@@ -25,7 +25,7 @@ export class Validator {
                 return res.status(401).json({ message: "Unauthorized." });
             }
 
-            req.body.user = user.rows[0];
+            (req as any).user.id = user.rows[0];
             next();
         } catch (error) {
             console.error(error);
