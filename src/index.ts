@@ -94,7 +94,7 @@ app.patch("/avatars/", Validator.verifyToken, async (req, res) => {
             UPDATE ${cassandra.keyspace}.users
             SET accent_color=?, avatar=?, edited_at=?
             WHERE id=? AND created_at=?
-            `, [accentColor, `${hashedAvatar}_png`, Date.now(), (req as any).user.id, (req as any).user.id.created_at], { prepare: true });
+            `, [accentColor, `${hashedAvatar}_png`, Date.now(), (req as any).user.id, (req as any).user.created_at], { prepare: true });
 
             res.status(200).json({ hash: `${hashedAvatar}_png` });
         }
