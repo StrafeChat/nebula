@@ -48,14 +48,14 @@ app.get("/avatars/:userId/:hash.:ext", (req, res) => {
 app.patch("/avatars/", Validator.verifyToken, async (req, res) => {
     try {
         if (!req.body.data) return;
-        if (!fs.existsSync(path.join("static", "avatars", (req as any).user.id))) fs.mkdirSync(path.join("static", "avatars", (req as any).user.id));
+        if (!fs.existsSync(path.join("static", "avatars", req.user!.id))) fs.mkdirSync(path.join("static", "avatars", req.user!.id));
 
         const buffer = Buffer.from(req.body.data, "base64");
         const hash = crypto.createHash("sha256");
         hash.update(buffer);
         const hashedAvatar = hash.digest("hex");
 
-        const avatarPath = path.join('static', 'avatars', (req as any).user.id, hashedAvatar);
+        const avatarPath = path.join('static', 'avatars', req.user!.id, hashedAvatar);
 
         let image = await decode(buffer, true);
 
@@ -74,7 +74,7 @@ app.patch("/avatars/", Validator.verifyToken, async (req, res) => {
             UPDATE ${cassandra.keyspace}.users
             SET accent_color=?, avatar=?, edited_at=?
             WHERE id=? AND created_at=?
-            `, [accentColor, `${hashedAvatar}_gif`, Date.now(), (req as any).user.id, (req as any).user.id.created_at], { prepare: true });
+            `, [accentColor, `${hashedAvatar}_gif`, Date.now(), req.user!.id, req.user!.created_at], { prepare: true });
 
             res.status(200).json({ hash: `${hashedAvatar}_gif` });
         } else {
@@ -94,7 +94,7 @@ app.patch("/avatars/", Validator.verifyToken, async (req, res) => {
             UPDATE ${cassandra.keyspace}.users
             SET accent_color=?, avatar=?, edited_at=?
             WHERE id=? AND created_at=?
-            `, [accentColor, `${hashedAvatar}_png`, Date.now(), (req as any).user.id, (req as any).user.created_at], { prepare: true });
+            `, [accentColor, `${hashedAvatar}_png`, Date.now(), req.user!.id, req.user!.created_at], { prepare: true });
 
             res.status(200).json({ hash: `${hashedAvatar}_png` });
         }

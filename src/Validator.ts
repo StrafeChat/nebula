@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { cassandra } from ".";
+import User from "./interfaces/User";
 
 export class Validator {
 
@@ -25,7 +26,7 @@ export class Validator {
                 return res.status(401).json({ message: "Unauthorized." });
             }
 
-            (req as any).user = user.rows[0];
+            req.user = user.rows[0] as unknown as User;
             next();
         } catch (error) {
             console.error(error);
