@@ -52,6 +52,10 @@ const startServer = async () => {
     app.use((_req, res) => {
         res.status(404).json({ message: "The resource you are looking for does not exist!" });
     });
+
+    redis.subscribe("nebula-avatars", (channel, message) => {
+        console.log(channel, message);
+    })
 }
 
 (async () => {
