@@ -3,9 +3,11 @@ import cors from "cors";
 import express from "express";
 import fs from "fs";
 import helmet from "helmet";
-import { Logger } from "./helpers/logger";
 import { PORT } from "../config";
-import database, { redis } from "./database";
+import database from "./database";
+import { Logger } from "./helpers/logger";
+
+let avatarCount = 0;
 
 const app = express();
 
@@ -31,11 +33,15 @@ app.use((req, res, next) => {
 const init = async () => {
     if (!fs.existsSync("static")) fs.mkdir("static", () => { });
 
-    const folders = ["avatars"];
+    const folders = ["avatars", "avatars/default"];
 
     for (const folder of folders) {
         fs.mkdir(`static/${folder}`, { recursive: true }, () => { });
     }
+
+    const defaultAvatars = fs.readdirSync(`static/avatars/default`);
+    if (defaultAvatars.length < 1) throw new Error("Missing at least one default avatar to use in `static/avatars/default`");
+    avatarCount = defaultAvatars.length;
 }
 
 const startServer = async () => {
@@ -52,10 +58,6 @@ const startServer = async () => {
     app.use((_req, res) => {
         res.status(404).json({ message: "The resource you are looking for does not exist!" });
     });
-
-    redis.subscribe("nebula-avatars", (channel, message) => {
-        console.log(channel, message);
-    })
 }
 
 (async () => {
@@ -63,7 +65,6 @@ const startServer = async () => {
     await init();
     await database.init();
     await startServer();
-    await redis.subscribe("equinox", (message, channel) => {
-        console.log(message, channel);
-    })
 })();
+
+export { avatarCount };
