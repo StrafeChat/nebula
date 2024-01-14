@@ -3,7 +3,7 @@ import cors from "cors";
 import express from "express";
 import fs from "fs";
 import helmet from "helmet";
-import { PORT } from "../config";
+import { PORT, FRONTEND, EQUINOX } from "../config";
 import database from "./database";
 import { Logger } from "./helpers/logger";
 
@@ -11,24 +11,13 @@ let avatarCount = 0;
 
 const app = express();
 
-app.use(bodyParser.json());
-app.use(helmet());
-app.use(cors());
-
-app.set('trust proxy', 1);
+app.use(bodyParser.json({ limit: '25mb' }));
+//app.use(helmet());
+app.use(cors({ 
+    origin: [FRONTEND, EQUINOX], 
+    methods: ["POST", "PUT", "GET", "OPTIONS", "HEAD"], 
+    }));
 app.disable('x-powered-by');
-
-app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Headers', '*');
-    res.header('Access-Control-Allow-Methods', '*');
-
-    if (req.method === 'OPTIONS') {
-        res.status(200).send();
-    } else {
-        next();
-    }
-})
 
 const init = async () => {
     if (!fs.existsSync("static")) fs.mkdir("static", () => { });

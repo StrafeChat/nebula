@@ -13,13 +13,15 @@ export const verifyToken = async (req: Request, res: Response & { locals: { user
     const secret = atob(splitToken[2]);
 
     const users = await cassandra.execute(`
-    SELECT last_pass_reset, secret, created_at FROM ${cassandra.keyspace}.users
+    SELECT last_pass_reset, secret, verified, created_at FROM ${cassandra.keyspace}.users
     WHERE id=?
     LIMIT 1;
     `, [id]);
 
     if (users.rowLength < 1) return res.status(401).json({ message: "Unauthorized" });
-    if (!users.rows[0].get("verified") || users.rows[0].get("last_pass_reset") != parseInt(last_pass_reset) || users.rows[0].get("secret") != secret) return res.status(401).json({ message: "Unauthorized" });
+    if (!users.rows[0].get("verified")) return res.status(401).json({ message: "You need to verify your email to procced." });
+
+    if (users.rows[0].get("last_pass_reset").getTime() > parseInt(last_pass_reset) || users.rows[0].get("secret") != secret) return res.status(401).json({ message: "Unauthorized" });
     res.locals.user = { ...users.rows[0], id } as unknown as User;
     next();
 }

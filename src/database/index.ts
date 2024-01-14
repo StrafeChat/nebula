@@ -16,6 +16,7 @@ const cassandra = new Client({
 const redis = createClient();
 
 const init = async () => {
+    //cassandra.execute(`DROP TABLE strafechattesting.users;`)
     await cassandra.connect().catch(Logger.error);
     await redis.connect().catch(Logger.error);
 }

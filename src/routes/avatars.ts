@@ -17,6 +17,7 @@ router.get<{ userId: string, hash: string, ext: string }>("/:userId/:hash.:ext",
         if (err) {
             res.status(404).json({ message: "The avatar you are looking for does not exist." });
         } else {
+            res.setHeader("Content-Type", "image/png");
             res.sendFile(filePath);
         }
     });
@@ -40,8 +41,8 @@ router.post<string, {}, {}, {}, {}, { user: User }>('/', verifyToken, async (_re
         await cassandra.execute(`
         UPDATE ${cassandra.keyspace}.users
         SET avatar=?
-        WHERE id=? AND created_at=?
-        `, [`${hashedAvatar}.webp`, res.locals.user.id, res.locals.user.created_at]);
+        WHERE id=?
+        `, [`${hashedAvatar}.webp`, res.locals.user.id]);
 
         res.status(201).json({ avatar: `${hashedAvatar}.webp` });
     } catch (err) {
