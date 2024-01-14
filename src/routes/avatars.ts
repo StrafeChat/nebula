@@ -41,8 +41,8 @@ router.post<string, {}, {}, {}, {}, { user: User }>('/', verifyToken, async (_re
         await cassandra.execute(`
         UPDATE ${cassandra.keyspace}.users
         SET avatar=?
-        WHERE id=?
-        `, [`${hashedAvatar}.webp`, res.locals.user.id]);
+        WHERE id=? AND created_at=?
+        `, [`${hashedAvatar}.webp`, res.locals.user.id, res.locals.user.created_at]);
 
         res.status(201).json({ avatar: `${hashedAvatar}.webp` });
     } catch (err) {
