@@ -69,9 +69,7 @@ router.patch<string, {}, {}, { data: string }, {}, { user: User }>('/', verifyTo
         try {
             const metadata = await sharp(buf).metadata();
 
-            if (metadata.pages! > 1) {
-                extension = '.gif';
-            }
+            if (metadata.pages! > 1) extension = '.gif';
         } catch (err) {
             console.error("Error determining image type:", err);
             return res.status(500).json({ message: "An error occurred while processing the image." });

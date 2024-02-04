@@ -22,7 +22,7 @@ app.disable('x-powered-by');
 const init = async () => {
     if (!fs.existsSync("static")) fs.mkdir("static", () => { });
 
-    const folders = ["avatars", "avatars/default"];
+    const folders = ["avatars", "spaces", "avatars/default"];
 
     for (const folder of folders) {
         fs.mkdir(`static/${folder}`, { recursive: true }, () => { });
