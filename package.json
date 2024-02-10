@@ -21,7 +21,7 @@
     "imagescript": "^1.2.18",
     "log-utils": "^1.0.0",
     "redis": "^4.6.12",
-    "sharp": "^0.33.0"
+    "sharp": "^0.33.2"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",
