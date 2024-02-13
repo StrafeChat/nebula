@@ -20,7 +20,7 @@
     "helmet": "^7.1.0",
     "imagescript": "^1.2.18",
     "log-utils": "^1.0.0",
-    "redis": "^4.6.12",
+    "redis": "^4.6.13",
     "sharp": "^0.33.2"
   },
   "devDependencies": {
