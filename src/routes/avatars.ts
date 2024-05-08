@@ -73,7 +73,6 @@ router.patch<string, {}, {}, { data: string }, {}, { user: User }>('/', verifyTo
 
     try {
         const base64 = req.body.data.split(',').pop();
-        console.log(base64)
         // if (!base64) return res.status(400).json({ message: "The data must be a valid base64 data url." });
         const buffer = Buffer.from(base64!.replace(/^data:image\/\w+;base64,/, ''), 'base64');
         const image = await loadImage(buffer);
