@@ -8,8 +8,7 @@ import bodyParser from "body-parser";
 
 const router = express.Router();
 
-router.use(bodyParser.json({ limit: '25mb' }));
-router.use(bodyParser.urlencoded({ extended: true, limit: '25mb' }));
+router.use(bodyParser.urlencoded({limit: "25mb", extended: true, parameterLimit: 25000}));
 
 router.get<{ hash: string, file_name: string }>("/:hash/:file_name", (req, res) => {
     const filePath = path.join(__dirname, `../../static/attachments/${req.params.hash}/${req.params.file_name}`);
