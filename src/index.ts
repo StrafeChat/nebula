@@ -11,6 +11,7 @@ let avatarCount = 0;
 
 const app = express();
 
+app.use(bodyParser.json({ limit: '25mb' }));
 app.use(bodyParser.urlencoded({limit: "25mb", extended: true, parameterLimit:25000}));
 
 //app.use(helmet());
