@@ -1,0 +1,30 @@
+linters-settings:
+  govet:
+    disable:
+      - printf  # Disables the printf checker for non-constant format strings
+
+linters:
+  enable:
+    - errcheck
+    - gosimple
+    - govet
+    - ineffassign
+    - staticcheck
+    - typecheck
+    - unused
+    - revive
+    - gofmt
+    - goimports
+
+run:
+  go: "1.22"
+  deadline: 5m
+  tests: true
+
+issues:
+  exclude-dirs:
+    - vendor/
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - govet  # Exclude printf checks in test files
