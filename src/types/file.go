@@ -1,0 +1,20 @@
+package types
+
+type FileType string
+
+const (
+	Avatar FileType = "avatar"
+	Banner FileType = "banner"
+	Upload FileType = "upload"
+)
+
+type FileMetadata struct {
+	ID        string   `json:"id"`
+	UserID    string   `json:"user_id"`
+	Type      FileType `json:"type"`
+	Filename  string   `json:"filename"`
+	MimeType  string   `json:"mime_type"`
+	Size      int64    `json:"size"`
+	CreatedAt int64    `json:"created_at"`
+	UpdatedAt int64    `json:"updated_at"`
+}
