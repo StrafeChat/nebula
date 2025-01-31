@@ -6,7 +6,7 @@ WORKDIR /app
 COPY . .
 
 RUN go mod tidy && \
-    CGO_ENABLED=0 go build -o nebula ./src/main.go
+    CGO_ENABLED=0 go build -o nebula ./main.go
 
 EXPOSE 443
 
