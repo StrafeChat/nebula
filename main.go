@@ -58,6 +58,7 @@ func main() {
 	userRoutes := v1.Group("/users")
 	userRoutes.Use(middleware.Auth)
 	userRoutes.Post("/avatar", users.UploadAvatar)
+	userRoutes.Post("/banner", users.HandleBannerUpload)
 
 	// File routes
 	v1.Get("/files/*", files.ServeFile)
