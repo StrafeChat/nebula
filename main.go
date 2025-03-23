@@ -7,7 +7,7 @@ import (
 
 	"github.com/StrafeChat/nebula/src/config"
 	"github.com/StrafeChat/nebula/src/database"
-	"github.com/StrafeChat/nebula/src/handlers/v1/files"
+	"github.com/StrafeChat/nebula/src/handlers/v1/events"
 	"github.com/StrafeChat/nebula/src/handlers/v1/users"
 	"github.com/StrafeChat/nebula/src/middleware"
 	"github.com/gofiber/fiber/v3"
@@ -28,6 +28,17 @@ func main() {
 		log.Fatalf("Failed to initialize database: %v", err)
 	}
 	defer database.Session.Close()
+
+	// Initialize Redis connection
+	if err := database.InitRedis(); err != nil {
+		log.Fatalf("Failed to initialize Redis: %v", err)
+	}
+
+	// Start avatar event listener in a goroutine
+	go events.StartAvatarEventListener()
+
+	// Check all user avatars on startup
+	events.CheckUserAvatars()
 
 	// Load configuration
 	cfg := config.LoadConfig()
@@ -60,13 +71,9 @@ func main() {
 	userRoutes.Post("/avatar", users.UploadAvatar)
 	userRoutes.Post("/banner", users.HandleBannerUpload)
 
-	// File routes
-	v1.Get("/files/*", files.ServeFile)
-
 	// Static file serving
 	app.Use("avatars", static.New("./uploads/avatars"))
 	app.Use("banners", static.New("./uploads/banners"))
-	app.Use("uploads", static.New("./uploads/uploads"))
 
 	// Start server
 	addr := fmt.Sprintf(":%d", cfg.Port)

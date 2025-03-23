@@ -6,11 +6,13 @@ import (
 	"time"
 
 	"github.com/gocql/gocql"
+	"github.com/redis/go-redis/v9"
 	"github.com/scylladb/gocqlx/v3"
 )
 
 var (
 	Session *gocqlx.Session
+	Rdb     *redis.Client
 )
 
 func InitDB() error {
@@ -27,5 +29,19 @@ func InitDB() error {
 	Session = &session
 	log.Println("Connected to ScyllaDB.")
 
+	return nil
+}
+
+func InitRedis() error {
+	redisHost := os.Getenv("REDIS_HOST")
+	if redisHost == "" {
+		redisHost = "127.0.0.1:6379"
+	}
+
+	Rdb = redis.NewClient(&redis.Options{
+		Addr: redisHost,
+	})
+
+	log.Println("Connected to Redis.")
 	return nil
 }
