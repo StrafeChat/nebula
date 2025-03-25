@@ -40,6 +40,9 @@ func main() {
 	// Check all user avatars on startup
 	events.CheckUserAvatars()
 
+	// Ensure all users from database have avatar directories
+	events.EnsureUserAvatars()
+
 	// Load configuration
 	cfg := config.LoadConfig()
 

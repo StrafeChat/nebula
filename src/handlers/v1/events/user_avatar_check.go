@@ -4,11 +4,15 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+
+	"github.com/StrafeChat/nebula/src/database"
+	"github.com/scylladb/gocqlx/v3/qb"
 )
 
-// CheckUserAvatars scans all user avatar directories and ensures each has a default.webp file
-func CheckUserAvatars() {
-	log.Println("Starting user avatar check...")
+// EnsureUserAvatars queries all users from the database and ensures each has an avatar directory
+// with a default avatar file
+func EnsureUserAvatars() {
+	log.Println("Starting user avatar check from database...")
 
 	// Ensure uploads directory exists
 	uploadsDir := "uploads"
@@ -16,16 +20,16 @@ func CheckUserAvatars() {
 		log.Fatalf("Failed to create uploads directory: %v", err)
 	}
 
+	// Ensure avatars directory exists
+	avatarsDir := filepath.Join(uploadsDir, "avatars")
+	if err := os.MkdirAll(avatarsDir, 0755); err != nil {
+		log.Fatalf("Failed to create avatars directory: %v", err)
+	}
+
 	// Ensure defaultAvatars directory exists
 	defaultAvatarsDir := filepath.Join(uploadsDir, "defaultAvatars")
 	if err := os.MkdirAll(defaultAvatarsDir, 0755); err != nil {
 		log.Fatalf("Failed to create defaultAvatars directory: %v", err)
-	}
-
-	// Ensure banners directory exists
-	bannersDir := filepath.Join(uploadsDir, "banners")
-	if err := os.MkdirAll(bannersDir, 0755); err != nil {
-		log.Fatalf("Failed to create banners directory: %v", err)
 	}
 
 	// Check if there's at least one default avatar
@@ -46,39 +50,36 @@ func CheckUserAvatars() {
 		}
 	}
 
-	// Path to user avatars directory
-	avatarsDir := filepath.Join(uploadsDir, "avatars")
-
-	// Create avatars directory if it doesn't exist
-	if err := os.MkdirAll(avatarsDir, 0755); err != nil {
-		log.Fatalf("Failed to create avatars directory: %v", err)
-	}
-
-	// Read all user directories
-	userDirs, err := os.ReadDir(avatarsDir)
-	if err != nil {
-		log.Printf("Failed to read avatars directory: %v", err)
+	// Query all user IDs from the database
+	var userIDs []string
+	q := qb.Select("users").Columns("id").AllowFiltering().Query(*database.Session)
+	if err := q.Select(&userIDs); err != nil {
+		log.Printf("Failed to query user IDs from database: %v", err)
 		return
 	}
 
-	log.Printf("Found %d user avatar directories", len(userDirs))
+	log.Printf("Found %d users in database", len(userIDs))
 
-	// Check each user directory for default.webp
-	for _, userDir := range userDirs {
-		if !userDir.IsDir() {
-			continue
-		}
-
-		userID := userDir.Name()
+	// Check each user and ensure they have an avatar directory with a default avatar
+	for _, userID := range userIDs {
 		userAvatarDir := filepath.Join(avatarsDir, userID)
 		defaultAvatarPath := filepath.Join(userAvatarDir, "default.webp")
 
-		// Check if default.webp exists
+		// Check if user avatar directory exists
+		if _, err := os.Stat(userAvatarDir); os.IsNotExist(err) {
+			log.Printf("Creating avatar directory for user %s", userID)
+			if err := os.MkdirAll(userAvatarDir, 0755); err != nil {
+				log.Printf("Failed to create avatar directory for user %s: %v", userID, err)
+				continue
+			}
+		}
+
+		// Check if default avatar exists
 		if _, err := os.Stat(defaultAvatarPath); os.IsNotExist(err) {
 			log.Printf("User %s is missing default avatar, creating one...", userID)
 			CreateDefaultAvatar(userID)
 		}
 	}
 
-	log.Println("User avatar check completed")
+	log.Println("User avatar check from database completed")
 }
