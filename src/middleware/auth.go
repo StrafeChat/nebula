@@ -14,8 +14,8 @@ import (
 )
 
 func Auth(c fiber.Ctx) error {
-	// Get the token from the Authorization header
-	token := c.Get("Authorization")
+	// Get the token from the X-Session-Token header
+	token := c.Get("X-Session-Token")
 	if token == "" {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 			"error": "Missing authorization token",

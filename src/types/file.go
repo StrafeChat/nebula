@@ -3,9 +3,10 @@ package types
 type FileType string
 
 const (
-	Avatar FileType = "avatar"
-	Banner FileType = "banner"
-	Upload FileType = "upload"
+	Avatar   FileType = "avatar"
+	Banner   FileType = "banner"
+	Upload   FileType = "upload"
+	RoomIcon FileType = "room_icon"
 )
 
 type FileMetadata struct {

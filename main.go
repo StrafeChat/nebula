@@ -8,6 +8,7 @@ import (
 	"github.com/StrafeChat/nebula/src/config"
 	"github.com/StrafeChat/nebula/src/database"
 	"github.com/StrafeChat/nebula/src/handlers/v1/events"
+	"github.com/StrafeChat/nebula/src/handlers/v1/rooms"
 	"github.com/StrafeChat/nebula/src/handlers/v1/users"
 	"github.com/StrafeChat/nebula/src/middleware"
 	"github.com/gofiber/fiber/v3"
@@ -60,7 +61,7 @@ func main() {
 	app.Use(logger.New())
 	app.Use(cors.New(cors.Config{
 		AllowOrigins: []string{cfg.Domain},
-		AllowHeaders: []string{"Origin", "Content-Type", "Accept", "Authorization"},
+		AllowHeaders: []string{"Origin", "Content-Type", "Accept", "Authorization", "x-session-token"},
 		AllowMethods: []string{"GET", "POST", "PUT", "DELETE"},
 	}))
 
@@ -74,9 +75,15 @@ func main() {
 	userRoutes.Post("/avatar", users.UploadAvatar)
 	userRoutes.Post("/banner", users.HandleBannerUpload)
 
+	// Room routes
+	roomRoutes := v1.Group("/rooms")
+	roomRoutes.Use(middleware.Auth)
+	roomRoutes.Post("/:id/icon", rooms.UploadIcon)
+
 	// Static file serving
 	app.Use("avatars", static.New("./uploads/avatars"))
 	app.Use("banners", static.New("./uploads/banners"))
+	app.Use("icons", static.New("./uploads/icons"))
 
 	// Start server
 	addr := fmt.Sprintf(":%d", cfg.Port)
