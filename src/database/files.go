@@ -11,7 +11,7 @@ import (
 // StoreFileMetadata stores file metadata in the database
 func StoreFileMetadata(metadata types.FileMetadata, storedFilename string) error {
 	// Insert file metadata into files table
-	stmt, names := qb.Insert("strafechatgo.files").
+	stmt, names := qb.Insert("files").
 		Columns("id", "user_id", "type", "filename", "stored_filename", "mime_type", "size", "width", "height", "created_at", "updated_at").
 		ToCql()
 
@@ -44,7 +44,7 @@ func StoreFileMetadata(metadata types.FileMetadata, storedFilename string) error
 func GetFileMetadata(fileID string) (types.FileMetadata, string, error) {
 	var metadata types.FileMetadata
 
-	stmt, names := qb.Select("strafechatgo.files").
+	stmt, names := qb.Select("files").
 		Columns("id", "user_id", "type", "filename", "stored_filename", "mime_type", "size", "width", "height", "created_at", "updated_at").
 		Where(qb.Eq("id")).
 		ToCql()
@@ -87,7 +87,7 @@ func GetFileMetadata(fileID string) (types.FileMetadata, string, error) {
 
 // DeleteFileMetadata removes file metadata from the database
 func DeleteFileMetadata(fileID string) error {
-	stmt, names := qb.Delete("strafechatgo.files").
+	stmt, names := qb.Delete("files").
 		Where(qb.Eq("id")).
 		ToCql()
 
