@@ -8,6 +8,8 @@ import (
 	"github.com/gocql/gocql"
 	"github.com/redis/go-redis/v9"
 	"github.com/scylladb/gocqlx/v3"
+
+	"github.com/StrafeChat/nebula/src/database/models"
 )
 
 var (
@@ -29,6 +31,11 @@ func InitDB() error {
 	Session = &session
 	log.Println("Connected to ScyllaDB.")
 
+	if err := CreateSchema(); err != nil {
+		log.Fatalf("Failed to create schema: %v", err)
+		return err
+	}
+
 	return nil
 }
 
@@ -43,5 +50,28 @@ func InitRedis() error {
 	})
 
 	log.Println("Connected to Redis.")
+	return nil
+}
+
+/*_ Create all Tables and types _*/
+func CreateSchema() error {
+	log.Println("Creating database schema...")
+	models := []interface{}{
+		&models.File{},
+	}
+
+	for _, model := range models {
+		if schemaModel, ok := model.(interface{ SchemaDefinition() []string }); ok {
+			for _, stmt := range schemaModel.SchemaDefinition() {
+				log.Printf("Executing schema statement: %s", stmt)
+				if err := Session.ExecStmt(stmt); err != nil {
+					log.Printf("Schema creation error: %v", err)
+					return err
+				}
+			}
+		}
+	}
+
+	log.Println("Database schema created successfully")
 	return nil
 }

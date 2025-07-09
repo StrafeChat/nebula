@@ -7,7 +7,9 @@ import (
 
 	"github.com/StrafeChat/nebula/src/config"
 	"github.com/StrafeChat/nebula/src/database"
-	"github.com/StrafeChat/nebula/src/handlers/v1/events"
+	"github.com/StrafeChat/nebula/src/events"
+	handlerevents "github.com/StrafeChat/nebula/src/handlers/v1/events"
+	"github.com/StrafeChat/nebula/src/handlers/v1/files"
 	"github.com/StrafeChat/nebula/src/handlers/v1/rooms"
 	"github.com/StrafeChat/nebula/src/handlers/v1/users"
 	"github.com/StrafeChat/nebula/src/middleware"
@@ -36,13 +38,16 @@ func main() {
 	}
 
 	// Start avatar event listener in a goroutine
-	go events.StartAvatarEventListener()
+	go handlerevents.StartAvatarEventListener()
+
+	// Start file event listener in a goroutine
+	go events.StartFileEventListener()
 
 	// Check all user avatars on startup
-	events.CheckUserAvatars()
+	handlerevents.CheckUserAvatars()
 
 	// Ensure all users from database have avatar directories
-	events.EnsureUserAvatars()
+	handlerevents.EnsureUserAvatars()
 
 	// Load configuration
 	cfg := config.LoadConfig()
@@ -60,7 +65,7 @@ func main() {
 	// Middleware
 	app.Use(logger.New())
 	app.Use(cors.New(cors.Config{
-		AllowOrigins: []string{cfg.Domain},
+		AllowOrigins: []string{"*"},
 		AllowHeaders: []string{"Origin", "Content-Type", "Accept", "Authorization", "x-session-token"},
 		AllowMethods: []string{"GET", "POST", "PUT", "DELETE"},
 	}))
@@ -80,10 +85,17 @@ func main() {
 	roomRoutes.Use(middleware.Auth)
 	roomRoutes.Post("/:id/icon", rooms.UploadIcon)
 
+	// File routes
+	fileRoutes := v1.Group("/files")
+	fileRoutes.Use(middleware.Auth)
+	fileRoutes.Post("/", files.UploadFile)
+	fileRoutes.Get("/:id", files.GetFile)
+
 	// Static file serving
 	app.Use("avatars", static.New("./uploads/avatars"))
 	app.Use("banners", static.New("./uploads/banners"))
 	app.Use("icons", static.New("./uploads/icons"))
+	app.Use("attachments", static.New("./uploads/attachments"))
 
 	// Start server
 	addr := fmt.Sprintf(":%d", cfg.Port)

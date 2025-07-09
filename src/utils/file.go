@@ -2,9 +2,14 @@ package utils
 
 import (
 	"fmt"
+	"image"
+	_ "image/gif"
+	_ "image/jpeg"
+	_ "image/png"
 	"mime/multipart"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/google/uuid"
 )
@@ -14,6 +19,44 @@ var AllowedImageTypes = map[string]bool{
 	"image/png":  true,
 	"image/gif":  true,
 	"image/webp": true,
+}
+
+var AllowedAttachmentTypes = map[string]bool{
+	// Images
+	"image/jpeg": true,
+	"image/png":  true,
+	"image/gif":  true,
+	"image/webp": true,
+	"image/svg+xml": true,
+	// Videos
+	"video/mp4":  true,
+	"video/webm": true,
+	"video/ogg":  true,
+	"video/avi":  true,
+	"video/mov":  true,
+	// Audio
+	"audio/mp3":  true,
+	"audio/mpeg": true,
+	"audio/wav":  true,
+	"audio/ogg":  true,
+	"audio/m4a":  true,
+	"audio/flac": true,
+	// Documents
+	"application/pdf":                                                 true,
+	"application/msword":                                              true,
+	"application/vnd.openxmlformats-officedocument.wordprocessingml.document": true,
+	"application/vnd.ms-excel":                                        true,
+	"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": true,
+	"application/vnd.ms-powerpoint":                                   true,
+	"application/vnd.openxmlformats-officedocument.presentationml.presentation": true,
+	"text/plain": true,
+	"text/csv":   true,
+	// Archives
+	"application/zip":  true,
+	"application/x-rar-compressed": true,
+	"application/x-7z-compressed":  true,
+	"application/x-tar": true,
+	"application/gzip": true,
 }
 
 func SaveFile(file *multipart.FileHeader, userID string, fileType string) (string, error) {
@@ -71,6 +114,45 @@ func ValidateFile(file *multipart.FileHeader, maxSize int64) error {
 	}
 
 	return nil
+}
+
+func ValidateAttachment(file *multipart.FileHeader, maxSize int64) error {
+	if file.Size > maxSize {
+		return fmt.Errorf("file size exceeds maximum allowed size of %d bytes", maxSize)
+	}
+
+	contentType := file.Header.Get("Content-Type")
+	if !AllowedAttachmentTypes[contentType] {
+		return fmt.Errorf("invalid file type: %s", contentType)
+	}
+
+	return nil
+}
+
+// GetImageDimensions extracts width and height from image files
+func GetImageDimensions(file *multipart.FileHeader) (*int, *int, error) {
+	// Check if it's an image file
+	contentType := file.Header.Get("Content-Type")
+	if !strings.HasPrefix(contentType, "image/") {
+		return nil, nil, nil // Not an image, return nil dimensions
+	}
+
+	// Open the file
+	src, err := file.Open()
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to open file: %w", err)
+	}
+	defer src.Close()
+
+	// Decode image to get dimensions
+	img, _, err := image.DecodeConfig(src)
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to decode image: %w", err)
+	}
+
+	width := img.Width
+	height := img.Height
+	return &width, &height, nil
 }
 
 func DeleteOldFiles(userID string, fileType string) error {
