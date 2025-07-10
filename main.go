@@ -8,6 +8,7 @@ import (
 	"github.com/StrafeChat/nebula/src/config"
 	"github.com/StrafeChat/nebula/src/database"
 	"github.com/StrafeChat/nebula/src/events"
+	"github.com/StrafeChat/nebula/src/handlers/v1/emojis"
 	handlerevents "github.com/StrafeChat/nebula/src/handlers/v1/events"
 	"github.com/StrafeChat/nebula/src/handlers/v1/files"
 	"github.com/StrafeChat/nebula/src/handlers/v1/rooms"
@@ -91,11 +92,21 @@ func main() {
 	fileRoutes.Post("/", files.UploadFile)
 	fileRoutes.Get("/:id", files.GetFile)
 
+	// Emoji routes
+	emojiRoutes := v1.Group("/spaces")
+	emojiRoutes.Use(middleware.Auth)
+	emojiRoutes.Post("/:spaceId/emojis", emojis.UploadCustomEmoji)
+	emojiRoutes.Get("/:spaceId/emojis", emojis.GetSpaceEmojis)
+	emojiRoutes.Delete("/:spaceId/emojis/:emojiId", emojis.DeleteCustomEmoji)
+
 	// Static file serving
 	app.Use("avatars", static.New("./uploads/avatars"))
 	app.Use("banners", static.New("./uploads/banners"))
 	app.Use("icons", static.New("./uploads/icons"))
 	app.Use("attachments", static.New("./uploads/attachments"))
+	app.Use("emojis", static.New("./uploads/emojis"))
+	// Twemoji SVG serving (no auth required for public emojis)
+	app.Use("twemoji", static.New("./static/twemoji"))
 
 	// Start server
 	addr := fmt.Sprintf(":%d", cfg.Port)
