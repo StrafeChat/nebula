@@ -8,6 +8,7 @@ import (
 	"github.com/StrafeChat/nebula/src/config"
 	"github.com/StrafeChat/nebula/src/database"
 	"github.com/StrafeChat/nebula/src/events"
+	"github.com/StrafeChat/nebula/src/handlers/v1/bots"
 	"github.com/StrafeChat/nebula/src/handlers/v1/emojis"
 	handlerevents "github.com/StrafeChat/nebula/src/handlers/v1/events"
 	"github.com/StrafeChat/nebula/src/handlers/v1/files"
@@ -51,6 +52,9 @@ func main() {
 	// Ensure all users from database have avatar directories
 	handlerevents.EnsureUserAvatars()
 
+	// Ensure all bots from database have avatar directories
+	handlerevents.EnsureBotAvatars()
+
 	// Load configuration
 	cfg := config.LoadConfig()
 
@@ -93,6 +97,12 @@ spaceRoutes.Use(middleware.Auth)
 spaceRoutes.Post("/:id/icon", spaces.UploadIcon)
 spaceRoutes.Post("/:id/banner", spaces.UploadBanner)
 
+	// Bot routes
+	botRoutes := v1.Group("/bots")
+	botRoutes.Use(middleware.Auth)
+	botRoutes.Post("/:id/avatar", bots.UploadBotAvatar)
+	botRoutes.Post("/create-default-avatar", bots.CreateDefaultAvatar)
+
 	// File routes
 	fileRoutes := v1.Group("/files")
 	fileRoutes.Use(middleware.Auth)
@@ -114,6 +124,7 @@ app.Use("space_icons", static.New("./uploads/space_icons"))
 app.Use("space_banners", static.New("./uploads/space_banners"))
 app.Use("attachments", static.New("./uploads/attachments"))
 app.Use("emojis", static.New("./uploads/emojis"))
+app.Use("bot_avatars", static.New("./uploads/bot_avatars"))
 	// Twemoji SVG serving (no auth required for public emojis)
 	app.Use("twemoji", static.New("./static/twemoji"))
 
