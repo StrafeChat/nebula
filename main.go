@@ -72,7 +72,7 @@ func main() {
 	app.Use(logger.New())
 	app.Use(cors.New(cors.Config{
 		AllowOrigins: []string{"*"},
-		AllowHeaders: []string{"Origin", "Content-Type", "Accept", "Authorization", "x-session-token"},
+		AllowHeaders: []string{"Origin", "Content-Type", "Accept", "Authorization", "x-session-token", "x-bot-token"},
 		AllowMethods: []string{"GET", "POST", "PUT", "DELETE"},
 	}))
 
@@ -92,10 +92,10 @@ func main() {
 	roomRoutes.Post("/:id/icon", rooms.UploadIcon)
 
 	// Space routes
-spaceRoutes := v1.Group("/spaces")
-spaceRoutes.Use(middleware.Auth)
-spaceRoutes.Post("/:id/icon", spaces.UploadIcon)
-spaceRoutes.Post("/:id/banner", spaces.UploadBanner)
+	spaceRoutes := v1.Group("/spaces")
+	spaceRoutes.Use(middleware.Auth)
+	spaceRoutes.Post("/:id/icon", spaces.UploadIcon)
+	spaceRoutes.Post("/:id/banner", spaces.UploadBanner)
 
 	// Bot routes
 	botRoutes := v1.Group("/bots")
@@ -117,14 +117,14 @@ spaceRoutes.Post("/:id/banner", spaces.UploadBanner)
 	emojiRoutes.Delete("/:spaceId/emojis/:emojiId", emojis.DeleteCustomEmoji)
 
 	// Static file serving
-app.Use("avatars", static.New("./uploads/avatars"))
-app.Use("banners", static.New("./uploads/banners"))
-app.Use("icons", static.New("./uploads/icons"))
-app.Use("space_icons", static.New("./uploads/space_icons"))
-app.Use("space_banners", static.New("./uploads/space_banners"))
-app.Use("attachments", static.New("./uploads/attachments"))
-app.Use("emojis", static.New("./uploads/emojis"))
-app.Use("bot_avatars", static.New("./uploads/bot_avatars"))
+	app.Use("avatars", static.New("./uploads/avatars"))
+	app.Use("banners", static.New("./uploads/banners"))
+	app.Use("icons", static.New("./uploads/icons"))
+	app.Use("space_icons", static.New("./uploads/space_icons"))
+	app.Use("space_banners", static.New("./uploads/space_banners"))
+	app.Use("attachments", static.New("./uploads/attachments"))
+	app.Use("emojis", static.New("./uploads/emojis"))
+	app.Use("bot_avatars", static.New("./uploads/bot_avatars"))
 	// Twemoji SVG serving (no auth required for public emojis)
 	app.Use("twemoji", static.New("./static/twemoji"))
 
