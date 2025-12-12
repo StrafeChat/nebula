@@ -9,7 +9,6 @@ import (
 	"github.com/StrafeChat/nebula/src/database"
 	"github.com/StrafeChat/nebula/src/events"
 	"github.com/StrafeChat/nebula/src/handlers/v1/bots"
-	"github.com/StrafeChat/nebula/src/handlers/v1/emojis"
 	handlerevents "github.com/StrafeChat/nebula/src/handlers/v1/events"
 	"github.com/StrafeChat/nebula/src/handlers/v1/files"
 	"github.com/StrafeChat/nebula/src/handlers/v1/rooms"
@@ -96,6 +95,9 @@ func main() {
 	spaceRoutes.Use(middleware.Auth)
 	spaceRoutes.Post("/:id/icon", spaces.UploadIcon)
 	spaceRoutes.Post("/:id/banner", spaces.UploadBanner)
+	spaceRoutes.Post("/:id/emojis", spaces.UploadCustomEmoji)
+	spaceRoutes.Get("/:id/emojis", spaces.GetSpaceCustomEmojis)
+	spaceRoutes.Delete("/:id/emojis/:shortcode", spaces.DeleteCustomEmoji)
 
 	// Bot routes
 	botRoutes := v1.Group("/bots")
@@ -109,13 +111,6 @@ func main() {
 	fileRoutes.Post("/", files.UploadFile)
 	fileRoutes.Get("/:id", files.GetFile)
 
-	// Emoji routes
-	emojiRoutes := v1.Group("/spaces")
-	emojiRoutes.Use(middleware.Auth)
-	emojiRoutes.Post("/:spaceId/emojis", emojis.UploadCustomEmoji)
-	emojiRoutes.Get("/:spaceId/emojis", emojis.GetSpaceEmojis)
-	emojiRoutes.Delete("/:spaceId/emojis/:emojiId", emojis.DeleteCustomEmoji)
-
 	// Static file serving
 	app.Use("avatars", static.New("./uploads/avatars"))
 	app.Use("banners", static.New("./uploads/banners"))
@@ -125,6 +120,7 @@ func main() {
 	app.Use("attachments", static.New("./uploads/attachments"))
 	app.Use("emojis", static.New("./uploads/emojis"))
 	app.Use("bot_avatars", static.New("./uploads/bot_avatars"))
+	app.Use("custom_emojis", static.New("./uploads/custom_emojis"))
 	// Twemoji SVG serving (no auth required for public emojis)
 	app.Use("twemoji", static.New("./static/twemoji"))
 

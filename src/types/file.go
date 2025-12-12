@@ -9,6 +9,7 @@ const (
 	RoomIcon    FileType = "room_icon"
 	SpaceIcon   FileType = "space_icon"
 	SpaceBanner FileType = "space_banner"
+	CustomEmoji FileType = "custom_emoji"
 )
 
 type FileMetadata struct {
