@@ -19,6 +19,12 @@ type Config struct {
 	StorageBackend string
 	DataDir        string
 	S3             S3Config
+
+	// SeedEmoji, when true (the default), copies the bundled Unicode emoji sets into the
+	// store on start so the web client renders emoji from this instance rather than a
+	// third-party CDN. EmojiAssetsDir is where those bundled files live in the image.
+	SeedEmoji      bool
+	EmojiAssetsDir string
 }
 
 // S3Config is read only when StorageBackend is "s3".
@@ -45,6 +51,8 @@ func Load() (*Config, error) {
 		CORSOrigins:        getEnvArray("CORS_ORIGINS", nil),
 		CacheControlMaxAge: getEnvInt("CACHE_CONTROL_MAX_AGE", 86400),
 		StorageBackend:     strings.ToLower(getEnvString("STORAGE_BACKEND", "fs")),
+		SeedEmoji:          getEnvBool("SEED_EMOJI", true),
+		EmojiAssetsDir:     getEnvString("EMOJI_ASSETS_DIR", "./emoji"),
 		S3: S3Config{
 			Bucket:          getEnvString("S3_BUCKET", ""),
 			Region:          getEnvString("S3_REGION", "us-east-1"),

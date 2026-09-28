@@ -33,6 +33,21 @@ Everything lives under `/v1/<key>`, where the key is an ordinary path like
 The bearer check is constant-time, and with `UPLOAD_SECRET` unset both mutating methods are
 refused — a read-only CDN, which is a reasonable way to run a replica.
 
+## Bundled emoji
+
+The web client renders Unicode emoji as images from an artwork set. Rather than pull those
+from a third-party CDN - which would leak every viewer's IP and referrer and break on an
+air-gapped instance - nebula ships the sets and serves them from this instance, under
+`/v1/emoji/<set>/…` (so `<domain>/cdn/v1/emoji/twemoji/1f600.svg` behind Caddy).
+
+`scripts/fetch-emoji.sh` downloads the pinned sets (twemoji, noto, openmoji) into
+`EMOJI_ASSETS_DIR` at image-build time; on start, nebula copies any it does not already hold
+into the store (`SEED_EMOJI`, default on). The copy is idempotent - it records the set
+version and re-runs only when that changes - and runs in the background, so on a fresh store
+emoji briefly 404 (the client falls back to the system font) until the first seed finishes.
+A seed error is logged, never fatal. Building offline (`--build-arg FETCH_EMOJI=0`) or with
+`SEED_EMOJI=false` simply serves no bundled emoji.
+
 ## Configuration
 
 Environment variables only, no config file.
@@ -46,6 +61,8 @@ Environment variables only, no config file.
 | `HTTP_BODY_LIMIT_MB` | `25` | Upload ceiling; match equinox's attachment limit. |
 | `CORS_ORIGINS` | *(empty)* | Comma-separated. Empty mirrors any `Origin` — fine locally, list your instances in production, because federated clients `fetch()` encrypted attachments cross-origin. |
 | `CACHE_CONTROL_MAX_AGE` | `86400` | Seconds, on successful `GET`/`HEAD`. |
+| `SEED_EMOJI` | `true` | Seed the bundled emoji sets into the store on start (see below). |
+| `EMOJI_ASSETS_DIR` | `./emoji` | Where the bundled sets live (`/app/emoji` in Docker). |
 | `S3_BUCKET` | — | Required when `STORAGE_BACKEND=s3`. |
 | `S3_REGION` | `us-east-1` | |
 | `S3_ENDPOINT` | *(empty)* | Empty means AWS; set it for MinIO, R2, B2, Ceph. |
@@ -79,3 +96,9 @@ Adding a backend means implementing `storage.Storage` (`Put`, `Get`, `Stat`, `De
 ## Licence
 
 AGPL-3.0. See [LICENSE](LICENSE).
+
+The bundled emoji artwork keeps its own upstream licences, shipped beside each set as
+`emoji/<set>/LICENSE`: **Twemoji** graphics [CC-BY 4.0](https://creativecommons.org/licenses/by/4.0/),
+**Noto Emoji** [Apache-2.0](https://www.apache.org/licenses/LICENSE-2.0), **OpenMoji**
+[CC-BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). The CC-BY / CC-BY-SA sets
+require attribution, which the web client shows under Settings → Appearance → Emoji.

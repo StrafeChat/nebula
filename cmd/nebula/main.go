@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/StrafeChat/nebula/internal/config"
+	"github.com/StrafeChat/nebula/internal/seed"
 	"github.com/StrafeChat/nebula/internal/server"
 	"github.com/StrafeChat/nebula/internal/storage"
 	"github.com/joho/godotenv"
@@ -26,6 +27,18 @@ func main() {
 		log.Fatal(err)
 	}
 	log.Printf("nebula: storage backend %s", st.Name())
+
+	// Seed the bundled emoji sets in the background so the client renders emoji from this
+	// instance, not a third-party CDN. It is idempotent and non-fatal, and the server starts
+	// serving immediately - on a fresh store emoji 404 (client falls back to the system font)
+	// only until the first seed finishes.
+	if cfg.SeedEmoji {
+		go func() {
+			if _, err := seed.Emoji(context.Background(), st, cfg.EmojiAssetsDir); err != nil {
+				log.Printf("nebula: emoji seed failed: %v", err)
+			}
+		}()
+	}
 
 	srv, err := server.New(cfg, st)
 	if err != nil {

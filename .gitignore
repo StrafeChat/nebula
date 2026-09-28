@@ -3,3 +3,6 @@ data/
 /tmp
 tmp/
 /bin
+# Emoji artwork fetched by scripts/fetch-emoji.sh at build time (not committed - see the
+# script for the pinned upstream versions).
+/emoji/
